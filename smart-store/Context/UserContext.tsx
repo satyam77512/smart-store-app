@@ -23,9 +23,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const loadUser = async () => {
       const storedName = await AsyncStorage.getItem('name');
       const storedUsername = await AsyncStorage.getItem('username');
-      if (storedName && storedUsername) {
+      const storedHost = await AsyncStorage.getItem('host');
+      if (storedName && storedUsername && storedHost) {
         setName(storedName);
         setUsername(storedUsername);
+        setHost(storedHost);
         setIsLoggedIn(true);
       }
     };
@@ -43,13 +45,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     setName('');
     setUsername('');
+    setHost('');
     setIsLoggedIn(false);
+    await AsyncStorage.removeItem('host');
     await AsyncStorage.removeItem('name');
     await AsyncStorage.removeItem('username');
   };
 
   const backendHost = async (URL:string)=>{
     setHost(URL);
+    await AsyncStorage.setItem('host',URL);
   }
 
   return (

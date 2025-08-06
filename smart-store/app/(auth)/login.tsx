@@ -4,6 +4,7 @@ import { View, TextInput, Text, StyleSheet, TouchableOpacity, ToastAndroid, Keyb
 import { useRouter } from 'expo-router';
 import { useUser } from '@/Context/UserContext';
 import * as Network from 'expo-network'
+import LoadingScreen from '@/Components/LodingScreen';
 
 import { COLORS } from '@/constants/theme';
 
@@ -14,6 +15,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const router = useRouter();
     const { isLoggedIn, login ,backendHost,host} = useUser();
+    const [loading,setLoading] = useState(false);
 
     useEffect(() => {
         if (isLoggedIn) {
@@ -23,6 +25,11 @@ const Login = () => {
 
     useEffect(()=>{
         const findBackend = async ()=>{
+            if(host)
+            {
+                setLoading(true);
+                return;
+            }
             var deviceIp = await Network.getIpAddressAsync();
             const subnet = deviceIp.split('.').slice(0, 3).join('.'); // "192.168.29"
 
@@ -34,6 +41,7 @@ const Login = () => {
                     if (res.status === 200) {
                     // console.log("Found backend at:", testIp);
                     backendHost(`http://${testIp}:3000`);
+                    setLoading(true);
                     return;
                     }
                 } catch (err) {
@@ -70,6 +78,11 @@ const Login = () => {
             }
         }
     };
+
+    if(!loading)
+    {
+        return <LoadingScreen/>;
+    }
 
     return (
         <KeyboardAvoidingView

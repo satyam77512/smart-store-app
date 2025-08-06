@@ -1,4 +1,4 @@
-import React, { useState,useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
     View,
@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import { useUser } from '@/Context/UserContext';
 import { COLORS } from '@/constants/theme';
 import * as Network from 'expo-network';
-
+import LoadingScreen from '@/Components/LodingScreen';
 
 const Signup = () => {
 
@@ -23,18 +23,32 @@ const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const router = useRouter();
-    const {isLoggedIn,login ,backendHost,host} = useUser();
+    const { isLoggedIn, login, backendHost, host } = useUser();
+    const [loading, setLoading] = useState(false);
 
 
     useEffect(() => {
         if (isLoggedIn) {
             router.replace('/(tabs)');
         }
+
+        if (host) {
+            setLoading(true);
+            return;
+        }
+    }, [isLoggedIn]);
+    
+    useEffect(()=>{
         const findBackend = async ()=>{
+            if(host)
+            {
+                setLoading(true);
+                return;
+            }
             var deviceIp = await Network.getIpAddressAsync();
             const subnet = deviceIp.split('.').slice(0, 3).join('.'); // "192.168.29"
 
-            for (let i = 1; i < 255; i++) {
+            for (let i = 2; i < 255; i++) {
                 const testIp = `${subnet}.${i}`;
                 try {
                     // console.log(testIp);
@@ -42,18 +56,19 @@ const Signup = () => {
                     if (res.status === 200) {
                     // console.log("Found backend at:", testIp);
                     backendHost(`http://${testIp}:3000`);
+                    setLoading(true);
+                    return;
                     }
                 } catch (err) {
                     // Ignore failed IPs
                 }
-
             }
             console.warn("Backend not found on local network.");
             return null;
         }
 
         findBackend();
-    }, [isLoggedIn]);
+    },[])
 
     const submitHandle = async () => {
         if (!name || !username || !email || !password) {
@@ -83,6 +98,10 @@ const Signup = () => {
             }
         }
     };
+
+    if (!loading) {
+        return <LoadingScreen />;
+    }
 
     return (
         <KeyboardAvoidingView
