@@ -17,8 +17,7 @@ import { useIsFocused } from '@react-navigation/native';
 
 const Cart = () => {
 
-  const host = "http://192.168.250.154:3000";
-  const { isLoggedIn, username } = useUser();
+  const { isLoggedIn, username, host} = useUser();
   const router = useRouter();
   const isFocused = useIsFocused();
 

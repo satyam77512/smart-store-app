@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect} from 'react';
 import axios from 'axios';
 import {
     View,
@@ -13,17 +13,47 @@ import {
 import { useRouter } from 'expo-router';
 import { useUser } from '@/Context/UserContext';
 import { COLORS } from '@/constants/theme';
+import * as Network from 'expo-network';
 
-
- const host = "http://192.168.250.154:3000";;
 
 const Signup = () => {
+
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const router = useRouter();
-    const { login } = useUser();
+    const {isLoggedIn,login ,backendHost,host} = useUser();
+
+
+    useEffect(() => {
+        if (isLoggedIn) {
+            router.replace('/(tabs)');
+        }
+        const findBackend = async ()=>{
+            var deviceIp = await Network.getIpAddressAsync();
+            const subnet = deviceIp.split('.').slice(0, 3).join('.'); // "192.168.29"
+
+            for (let i = 1; i < 255; i++) {
+                const testIp = `${subnet}.${i}`;
+                try {
+                    // console.log(testIp);
+                    const res = await axios.get(`http://${testIp}:3000/health`, { timeout: 300 });
+                    if (res.status === 200) {
+                    // console.log("Found backend at:", testIp);
+                    backendHost(`http://${testIp}:3000`);
+                    }
+                } catch (err) {
+                    // Ignore failed IPs
+                }
+
+            }
+            console.warn("Backend not found on local network.");
+            return null;
+        }
+
+        findBackend();
+    }, [isLoggedIn]);
 
     const submitHandle = async () => {
         if (!name || !username || !email || !password) {

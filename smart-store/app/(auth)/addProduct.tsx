@@ -6,7 +6,7 @@ import { useUser } from "@/Context/UserContext";
 import axios from "axios";
 import { useIsFocused } from '@react-navigation/native';
 
-const host = "http://192.168.250.154:3000"
+const host = "http://192.168.29.158:3000"
 
 const Addproduct = () => {
 

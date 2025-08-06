@@ -6,6 +6,8 @@ interface UserContextType {
   username:string;
   isLoggedIn: boolean;
   login: (name: string,Username:string) => void;
+  backendHost : (URL:string) => void;
+  host : string;
   logout: () => void;
 }
 
@@ -15,6 +17,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [host,setHost] = useState('');
 
   useEffect(() => {
     const loadUser = async () => {
@@ -45,8 +48,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     await AsyncStorage.removeItem('username');
   };
 
+  const backendHost = async (URL:string)=>{
+    setHost(URL);
+  }
+
   return (
-    <UserContext.Provider value={{ name,username,isLoggedIn,login, logout }}>
+    <UserContext.Provider value={{ name,username,isLoggedIn,login, logout,backendHost,host}}>
       {children}
     </UserContext.Provider>
   );

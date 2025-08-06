@@ -6,9 +6,8 @@ import { useIsFocused } from '@react-navigation/native';
 import axios from 'axios';
 
 export default function Profile() {
-  const host = "http://192.168.250.154:3000";
   
-  const { username, logout } = useUser();
+  const { username, logout , host} = useUser();
   const router = useRouter();
   const isFocused = useIsFocused();
 

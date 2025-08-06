@@ -48,10 +48,7 @@ const signup = async (req, res) => {
 };
 
 const login = async (req, res) => {
-    const host = req.headers.host;
-    const fullHost = req.protocol + '://' + req.get('host');
-    console.log(fullHost);
-
+    
     try {
         const { Loginid, Password } = req.body;
         // Check if fields are provided

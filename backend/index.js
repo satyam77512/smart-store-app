@@ -13,8 +13,8 @@ app.use("/user/auth", require("./routes/Auth.routes"));
 app.use("/user/product",require("./routes/Product.routes"));
 app.use("/user/pay",require("./routes/Payment.routes"));
 
-app.post("/",(req,res)=>{
-  res.send("backend is running")
+app.get("/health",(req,res)=>{
+  return res.status(200).json({message:"backend is running"});
 })
 
 

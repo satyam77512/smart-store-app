@@ -1,6 +1,9 @@
-import { Text, View, ScrollView, Image, StyleSheet,SafeAreaView} from "react-native";
+import { Text, View, ScrollView, Image, StyleSheet, SafeAreaView } from "react-native";
 import { useRouter } from "expo-router";
 import { useUser } from "@/Context/UserContext";
+import React, { useEffect} from 'react';
+import * as Network from 'expo-network';
+import axios from "axios";
 
 const images = [
   "https://imgs.search.brave.com/-6Cxu0CnvUgknXROyTBKFwFtmN9-XczkfItHHUJQdQs/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/ZnJlZS1wc2QvZmFz/aGlvbi1zYWxlLXBv/c3Rlci10ZW1wbGF0/ZV8yMy0yMTQ4NjMz/ODcwLmpwZz9zZW10/PWFpc19oeWJyaWQm/dz03NDA",
@@ -48,11 +51,40 @@ const recommendations = [
 ];
 
 export default function Index() {
-  const { name } = useUser();
+
   const router = useRouter();
 
+  const {name,backendHost,host} = useUser();
+
+useEffect(() => {
+
+  const findBackend = async () => {
+    if(host) return;
+
+    const deviceIp = await Network.getIpAddressAsync();
+    const subnet = deviceIp.split('.').slice(0, 3).join('.');
+
+    for (let i = 1; i < 255; i++) {
+      const testIp = `${subnet}.${i}`;
+      try {
+        const res = await axios.get(`http://${testIp}:3000/health`, { timeout: 300 });
+        if (res.status === 200) {
+          backendHost(`http://${testIp}:3000`);
+          break;
+        }
+      } catch (err) {
+        // skip
+      }
+    }
+    console.warn("Backend not found on local network.");
+  };
+
+  findBackend();
+}, [host]);
+
+
   return (
-   <SafeAreaView style={{ flex: 1, backgroundColor: "#F4F6F8" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F4F6F8" }}>
       <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 120 }}>
         <Text style={styles.tile}>Hello {name.trim().split(" ")[0]}</Text>
         <Text style={styles.sectionTitle}>Highlights</Text>

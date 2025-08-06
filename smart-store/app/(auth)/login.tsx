@@ -3,17 +3,17 @@ import axios from 'axios';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity, ToastAndroid, KeyboardAvoidingView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUser } from '@/Context/UserContext';
+import * as Network from 'expo-network'
 
 import { COLORS } from '@/constants/theme';
 
 
 const Login = () => {
-    const host = "http://192.168.250.154:3000";
     
     const [Loginid, setLoginid] = useState('');
     const [password, setPassword] = useState('');
     const router = useRouter();
-    const { isLoggedIn, login } = useUser();
+    const { isLoggedIn, login ,backendHost,host} = useUser();
 
     useEffect(() => {
         if (isLoggedIn) {
@@ -21,13 +21,39 @@ const Login = () => {
         }
     }, [isLoggedIn]);
 
+    useEffect(()=>{
+        const findBackend = async ()=>{
+            var deviceIp = await Network.getIpAddressAsync();
+            const subnet = deviceIp.split('.').slice(0, 3).join('.'); // "192.168.29"
+
+            for (let i = 2; i < 255; i++) {
+                const testIp = `${subnet}.${i}`;
+                try {
+                    // console.log(testIp);
+                    const res = await axios.get(`http://${testIp}:3000/health`, { timeout: 300 });
+                    if (res.status === 200) {
+                    // console.log("Found backend at:", testIp);
+                    backendHost(`http://${testIp}:3000`);
+                    return;
+                    }
+                } catch (err) {
+                    // Ignore failed IPs
+                }
+            }
+            console.warn("Backend not found on local network.");
+            return null;
+        }
+
+        findBackend();
+    },[])
+
     const submitHandle = async () => {
         try {
             if (Loginid === '' || password === '') {
                 alert("Please fill in your credentials");
                 return;
             }
-
+            console.log(host);
             const response = await axios.post(`${host}/user/auth/login`, {
                 Loginid: Loginid,
                 Password: password,
